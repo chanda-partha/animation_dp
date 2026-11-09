@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Algorithm Lab: DP and sorting animations</title>
+<style>
+:root{--bg:#f1f4f8;--sf:#fff;--ink:#16202c;--mute:#5d6b7b;--line:#d5dce5;--act:#4338ca;--actbg:#e3e1fb;--hit:#b7791f;--hitbg:#fbefd2;--wr:#1f7a4d;--wrbg:#d9f1e3;--path:#c2410c;--bl:#d6e8fa;--blb:#2b6cb0;--onact:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10161e;--sf:#18212c;--ink:#e6edf5;--mute:#93a1b2;--line:#2b3746;--act:#a5a0ff;--actbg:#2a2858;--hit:#f0b955;--hitbg:#44350f;--wr:#5fd694;--wrbg:#17392a;--path:#ff9a5c;--bl:#1d3350;--blb:#6aaef0;--onact:#10161e;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10161e;--sf:#18212c;--ink:#e6edf5;--mute:#93a1b2;--line:#2b3746;--act:#a5a0ff;--actbg:#2a2858;--hit:#f0b955;--hitbg:#44350f;--wr:#5fd694;--wrbg:#17392a;--path:#ff9a5c;--bl:#1d3350;--blb:#6aaef0;--onact:#10161e;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+.wrap{max-width:1260px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.55rem;margin:0 0 4px;letter-spacing:-.01em}
+.sub{color:var(--mute);margin:0 0 14px;max-width:80ch}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.tabs button{border-radius:999px;padding:5px 12px;font-size:.85rem}
+.tabs button[aria-selected=true]{background:var(--act);color:var(--onact);border-color:var(--act)}
+.grid{display:grid;grid-template-columns:260px minmax(0,1fr) 290px;gap:14px;align-items:start}
+@media(max-width:1000px){.grid{grid-template-columns:1fr}}
+.card{background:var(--sf);border:1px solid var(--line);border-radius:10px;padding:14px}
+.card h2{font-size:1rem;margin:0 0 10px}
+label{display:block;font-size:.85rem;color:var(--mute);margin-bottom:4px}
+input[type=number],input[type=text]{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}
+.irow{display:grid;grid-template-columns:26px 1fr 1fr 30px;gap:6px;align-items:center;margin-bottom:6px}
+.irow b{color:var(--mute);font-weight:600;text-align:center}
+.irow.on b{color:var(--wr)}
+button{font:inherit;padding:7px 12px;border-radius:6px;border:1px solid var(--line);background:var(--sf);color:var(--ink);cursor:pointer}
+button:hover{border-color:var(--act)}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--act);outline-offset:2px}
+button.pri{background:var(--act);color:var(--onact);border-color:var(--act)}
+button:disabled{opacity:.45;cursor:default}
+.x{padding:2px 0;width:30px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.err{color:#c0392b;font-size:.85rem;min-height:1.2em;margin-top:6px}
+.ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.ctl label{margin:0 0 0 auto;display:flex;gap:8px;align-items:center}
+.ctl input[type=range]{width:120px}
+.explain{min-height:3.4em;padding:10px 12px;border-radius:8px;background:var(--actbg);margin-bottom:12px}
+.explain.hit{background:var(--hitbg)}.explain.wr{background:var(--wrbg)}
+.tw{overflow-x:auto;padding-bottom:6px}
+table{border-collapse:separate;border-spacing:3px;margin:0}
+th{font-weight:600;font-size:.78rem;color:var(--mute);padding:2px 4px;white-space:nowrap}
+th.r{text-align:right;padding-right:8px;min-width:96px}
+td{min-width:38px;height:36px;padding:0 6px;white-space:nowrap;text-align:center;border-radius:6px;background:var(--bg);border:1px solid var(--line);font-variant-numeric:tabular-nums;color:var(--mute);transition:background .25s,transform .25s}
+td.f{color:var(--ink);background:var(--sf);border-color:var(--mute)}
+td.w{background:var(--wrbg);color:var(--ink);border-color:var(--wr)}
+td.h{background:var(--hitbg);border-color:var(--hit);color:var(--ink)}
+td.b{background:var(--line);border-color:var(--mute);color:var(--ink)}
+td.s{border:2px dashed var(--act);color:var(--ink)}
+td.c{background:var(--act);color:var(--onact);border-color:var(--act);transform:scale(1.12);font-weight:700}
+td.p{outline:3px solid var(--path);outline-offset:-1px}
+.bars{display:flex;align-items:flex-end;gap:4px;height:250px;padding:8px 2px}
+.bar{flex:1;min-width:14px;max-width:60px;background:var(--line);border:1px solid var(--mute);border-radius:6px 6px 0 0;text-align:center;font-size:.75rem;padding-top:3px;font-variant-numeric:tabular-nums;transition:height .25s,background .2s}
+.bar.c{background:var(--actbg);border-color:var(--act)}
+.bar.a{background:var(--hitbg);border-color:var(--hit)}
+.bar.b{background:var(--bl);border-color:var(--blb)}
+.bar.w,.bar.f{background:var(--wrbg);border-color:var(--wr)}
+.bar.p{background:var(--path);border-color:var(--path);color:#fff}
+.bar.j{border:2px dashed var(--act);background:var(--actbg)}
+.stats{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:.88rem;color:var(--mute)}
+.stats b{color:var(--ink)}
+.res{margin-top:12px;padding:10px 12px;border:1px solid var(--path);border-radius:8px;display:none}
+.stack{display:flex;flex-direction:column-reverse;gap:4px;min-height:60px;max-height:200px;overflow:auto}
+.fr{padding:4px 8px;border-radius:6px;border:1px solid var(--line);font-family:ui-monospace,Consolas,monospace;font-size:.85rem}
+.fr.top{background:var(--act);color:var(--onact);border-color:var(--act)}
+.log{height:190px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:.78rem;color:var(--mute)}
+.log div{padding:2px 0;border-bottom:1px dotted var(--line)}
+.log div:last-child{color:var(--ink)}
+.leg{display:flex;gap:12px;flex-wrap:wrap;font-size:.8rem;color:var(--mute);margin-top:10px}
+.leg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:1px solid var(--line)}
+.side{display:grid;gap:14px}
+.code{margin:0;padding:10px 0;font:12.5px/1.55 ui-monospace,Consolas,monospace;overflow:auto;white-space:pre}
+.code span{display:block;padding:0 12px;border-left:3px solid transparent;color:var(--mute)}
+.code span.on{background:var(--actbg);border-left-color:var(--act);color:var(--ink)}
+textarea{width:100%;min-height:74px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:13px/1.4 ui-monospace,Consolas,monospace;resize:vertical}
+.hide{display:none}
+@media(prefers-reduced-motion:reduce){td,.bar{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 id="ttl">Algorithm Lab</h1>
+  <p class="sub" id="sub"></p>
+  <div class="tabs" id="tabs" role="tablist" aria-label="Algorithm"></div>
+  <div class="grid">
+    <section class="card" aria-label="Input">
+      <h2>Your input</h2>
+      <div id="in_ks">
+        <label for="cap">Knapsack capacity (1 to 30)</label>
+        <input type="number" id="cap" min="1" max="30" value="8">
+        <div style="height:12px"></div>
+        <div class="irow"><span></span><label>Weight</label><label>Value</label><span></span></div>
+        <div id="items"></div>
+        <div class="row" style="margin:8px 0 12px"><button id="add">Add item</button><button id="ex">Load example</button></div>
+        <label for="stdin">Or paste: n W, then weights, then values</label>
+        <textarea id="stdin" spellcheck="false">4 8
+2 3 4 5
+3 4 5 6</textarea>
+        <div style="margin:6px 0 12px"><button id="useIn">Use pasted input</button></div>
+      </div>
+      <div id="in_lcs" class="hide">
+        <label for="sx">String X (up to 12 characters)</label>
+        <input type="text" id="sx" maxlength="12" value="AGGTAB" autocomplete="off">
+        <div style="height:10px"></div>
+        <label for="sy">String Y (up to 12 characters)</label>
+        <input type="text" id="sy" maxlength="12" value="GXTXAYB" autocomplete="off">
+        <div style="height:12px"></div>
+      </div>
+      <div id="in_arr" class="hide">
+        <label for="arr">Numbers, 2 to 16 values from 1 to 99</label>
+        <input type="text" id="arr" value="38 27 43 3 9 82 10 55" autocomplete="off">
+        <div style="margin:8px 0 12px"><button id="rnd">Random array</button></div>
+      </div>
+      <button class="pri" id="run" style="width:100%">Build animation</button>
+      <div class="err" id="err" role="alert"></div>
+    </section>
+
+    <section class="card" aria-label="Animation">
+      <div class="ctl">
+        <button id="back" disabled>Back</button>
+        <button class="pri" id="play" disabled>Play</button>
+        <button id="step" disabled>Step</button>
+        <button id="skip" disabled>Finish</button>
+        <label>Speed <input type="range" id="spd" min="1" max="10" value="5" aria-label="Animation speed"></label>
+      </div>
+      <div class="explain" id="exp"></div>
+      <div class="tw" id="gridv"><table id="tbl" aria-label="Table"></table></div>
+      <div class="bars hide" id="barv" aria-label="Array bars"></div>
+      <div class="leg" id="legG">
+        <span><i style="background:var(--act)"></i>Being computed now</span>
+        <span><i style="border:2px dashed var(--act)"></i>Waiting in the call stack</span>
+        <span><i style="background:var(--wrbg)"></i>Just written</span>
+        <span><i style="background:var(--hitbg)"></i>Memo hit (reused)</span>
+        <span><i style="background:var(--line)"></i>Base case (never stored)</span>
+        <span><i style="outline:3px solid var(--path);outline-offset:-3px"></i>Chosen path</span>
+      </div>
+      <div class="leg hide" id="legB">
+        <span><i style="background:var(--actbg);border-color:var(--act)"></i>Active range</span>
+        <span><i style="background:var(--hitbg)"></i>Left half / smaller than pivot</span>
+        <span><i style="background:var(--bl)"></i>Right half</span>
+        <span><i style="background:var(--path)"></i>Pivot</span>
+        <span><i style="border:2px dashed var(--act)"></i>Scanning j</span>
+        <span><i style="background:var(--wrbg)"></i>Written / final position</span>
+      </div>
+      <div class="stats" id="stats"></div>
+      <div class="res" id="res"></div>
+    </section>
+
+    <div class="side">
+      <section class="card" aria-label="Code" style="padding:14px 0 4px">
+        <h2 style="padding:0 14px">Code, live</h2>
+        <pre class="code" id="code"></pre>
+      </section>
+      <section class="card" aria-label="Call stack"><h2>Recursion stack</h2><div class="stack" id="stack"></div></section>
+      <section class="card" aria-label="Log"><h2>Step log</h2><div class="log" id="log"></div></section>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+var $=function(id){return document.getElementById(id)};
+function mk(r,c,v){var a=[];for(var i=0;i<r;i++)a.push(new Array(c).fill(v));return a}
+function fm(x){return String(+x.toFixed(2))}
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+var id='ks_memo',M=null,cur=-1,timer=null;
+
+/* ---------- code listings ---------- */
+var C={
+ksm:["int knapsack(wt, val, i, W) {","  if(i < 0 || W == 0)","    return 0;","  if(dp[i][W] != -1)","    return dp[i][W];","  int exclude = knapsack(wt, val, i-1, W);","  int include = 0;","  if(wt[i] <= W)","    include = val[i] + knapsack(wt, val, i-1, W-wt[i]);","  return dp[i][W] = max(include, exclude);","}"],
+kst:["for(int i = 0; i < n; i++)","  for(int w = 0; w <= W; w++) {","    int exclude = 0, include = 0;","    if(i > 0) exclude = dp[i-1][w];","    if(wt[i] <= w) {","      if(i > 0) include = val[i] + dp[i-1][w-wt[i]];","      else      include = val[i];","    }","    dp[i][w] = max(include, exclude);","  }"],
+fkg:["sort(items) by val/wt, highest first;","double total = 0; int cap = W;","for(auto &it : items) {","  if(it.wt <= cap) { cap -= it.wt; total += it.val; }","  else { total += it.val * (double)cap / it.wt; break; }","}"],
+fkm:["double f(int i, int W) {","  if(i < 0 || W == 0) return 0;","  if(dp[i][W] >= 0) return dp[i][W];","  double best = 0;","  for(int x = 0; x <= min(wt[i], W); x++)","    best = max(best, f(i-1, W-x) + x * (double)val[i] / wt[i]);","  return dp[i][W] = best;","}"],
+fkt:["for(int i = 0; i < n; i++)","  for(int w = 0; w <= W; w++) {","    double best = 0;","    for(int x = 0; x <= min(wt[i], w); x++)","      best = max(best, (i ? dp[i-1][w-x] : 0) + x * (double)val[i] / wt[i]);","    dp[i][w] = best;","  }"],
+lm:["int lcs(int i, int j) {","  if(i == 0 || j == 0) return 0;","  if(dp[i][j] != -1) return dp[i][j];","  if(X[i-1] == Y[j-1])","    return dp[i][j] = 1 + lcs(i-1, j-1);","  return dp[i][j] = max(lcs(i-1, j), lcs(i, j-1));","}"],
+lt:["for(int i = 1; i <= m; i++)","  for(int j = 1; j <= n; j++)","    if(X[i-1] == Y[j-1]) dp[i][j] = 1 + dp[i-1][j-1];","    else dp[i][j] = max(dp[i-1][j], dp[i][j-1]);"],
+ms:["void mergeSort(int l, int r) {","  if(l >= r) return;","  int m = (l + r) / 2;","  mergeSort(l, m);","  mergeSort(m + 1, r);","  merge(l, m, r);  // repeatedly take the smaller front element","}"],
+qs:["int partition(int lo, int hi) {","  int pivot = a[hi], i = lo - 1;","  for(int j = lo; j < hi; j++)","    if(a[j] < pivot) swap(a[++i], a[j]);","  swap(a[i + 1], a[hi]);","  return i + 1;","}","void quickSort(int lo, int hi) {","  if(lo >= hi) return;","  int p = partition(lo, hi);","  quickSort(lo, p - 1);","  quickSort(p + 1, hi);","}"]
+};
+
+/* ---------- knapsack helpers ---------- */
+function ksMsg(i,w,ex,inc,fit,sub,it,tab){
+  var wt=it[i].w,vl=it[i].v,s='exclude = '+ex+'. ';
+  if(fit)s+='wt['+i+']='+wt+' <= '+w+', so include = '+vl+' + '+(tab?(i>0?'dp['+(i-1)+']['+(w-wt)+']':'0'):'knapsack('+(i-1)+', '+(w-wt)+')')+' = '+vl+' + '+sub+' = '+inc+'. ';
+  else s+='wt['+i+']='+wt+' > '+w+', item does not fit, include stays 0. ';
+  return 'dp['+i+']['+w+']: '+s+'max('+inc+', '+ex+') = '+Math.max(inc,ex)+'.';
+}
+function ksRows(it){return it.map(function(x,i){return 'i='+i+' (wt '+x.w+', val '+x.v+')'})}
+function wCols(W){var c=[];for(var w=0;w<=W;w++)c.push('W='+w);return c}
+function gKs(p,tab){
+  var it=p.items,W=p.W,n=it.length,T=mk(n,W+1,null),EX=mk(n,W+1,0),S=[];
+  function nm(i,w){return 'knapsack(i='+i+', W='+w+')'}
+  function f(i,w){
+    var cc=i>=0?[i,w]:null;
+    S.push({p:nm(i,w),cur:cc,k:'c',L:[1],m:'Call '+nm(i,w)+'.'});
+    if(i<0||w===0){S.push({q:1,cur:cc,k:'b',L:[1,2],m:nm(i,w)+': '+(i<0?'i < 0, no items left':'W == 0, no capacity left')+'. Return 0. Nothing is stored in dp.'});return 0}
+    if(T[i][w]!=null){S.push({q:1,cur:cc,k:'h',L:[3,4],m:nm(i,w)+': dp['+i+']['+w+'] is already '+T[i][w]+' (not -1). Memo hit, return it with no more recursion.'});return T[i][w]}
+    var ex=f(i-1,w),inc=0,sub=0,fit=it[i].w<=w;
+    if(fit){sub=f(i-1,w-it[i].w);inc=it[i].v+sub}
+    var r=Math.max(inc,ex);T[i][w]=r;EX[i][w]=ex;
+    S.push({q:1,cur:cc,k:'w',set:[[i,w,r]],L:fit?[5,7,8,9]:[5,7,9],m:'Update '+ksMsg(i,w,ex,inc,fit,sub,it,0)});
+    return r;
+  }
+  if(tab){
+    S.push({k:'',L:[0],m:'dp is an n x (W+1) table. Fill it row by row, left to right, using only the row above.'});
+    for(var i=0;i<n;i++)for(var w=0;w<=W;w++){
+      var ex=i>0?T[i-1][w]:0,fit=it[i].w<=w,sub=fit&&i>0?T[i-1][w-it[i].w]:0,inc=fit?it[i].v+sub:0;
+      T[i][w]=Math.max(inc,ex);EX[i][w]=ex;
+      var L=[1,2];if(i>0)L.push(3);L.push(4);if(fit)L.push(i>0?5:6);L.push(8);
+      S.push({cur:[i,w],k:'w',set:[[i,w,T[i][w]]],L:L,m:'Fill '+ksMsg(i,w,ex,inc,fit,sub,it,1)});
+    }
+  }else f(n-1,W);
+  var path=[],ch=[],w2=W;
+  for(var j=n-1;j>=0&&w2>0;j--){path.push([j,w2]);if(T[j][w2]!==EX[j][w2]){ch.push(j);w2-=it[j].w}}
+  var names=ch.slice().reverse().map(function(k){return 'item '+k+' (wt '+it[k].w+', val '+it[k].v+')'});
+  var tw=ch.reduce(function(a,k){return a+it[k].w},0);
+  return {kind:'grid',rows:ksRows(it),cols:wCols(W),steps:S,path:path,chosen:ch,memo:!tab,
+    res:'<b>Maximum value: '+T[n-1][W]+'</b><br>Items taken: '+(names.length?names.join(', '):'none')+'. Total weight '+tw+' of '+W+'.'};
+}
+
+/* ---------- fractional knapsack ---------- */
+function gFkGreedy(p){
+  var W=p.W,S=[],it=p.items.map(function(x,k){return {k:k,w:x.w,v:x.v,r:x.v/x.w}}).sort(function(a,b){return b.r-a.r});
+  var set0=[];it.forEach(function(x,r){set0.push([r,0,x.w],[r,1,x.v],[r,2,fm(x.r)])});
+  S.push({set:set0,L:[0],k:'w',m:'Sort the items by value per weight, highest first. The rows below are already in that order.'});
+  var rem=W,tot=0,ch=[],full=false;
+  it.forEach(function(x,r){
+    if(full){S.push({cur:[r,3],k:'b',set:[[r,3,'0%'],[r,4,0],[r,5,rem]],L:[4],m:'The knapsack is full (break). Item '+x.k+' is not taken.'});return}
+    if(x.w<=rem){rem-=x.w;tot+=x.v;ch.push(x.k);
+      S.push({cur:[r,3],k:'w',set:[[r,3,'100%'],[r,4,x.v],[r,5,rem]],L:[2,3],m:'Item '+x.k+' (wt '+x.w+') fits in the remaining capacity, so take all of it. Gain '+x.v+', capacity left '+rem+'.'})}
+    else{var g=x.v*rem/x.w,fr=rem/x.w;tot+=g;if(rem>0)ch.push(x.k);
+      S.push({cur:[r,3],k:'w',set:[[r,3,fm(fr*100)+'%'],[r,4,fm(g)],[r,5,0]],L:[2,4],m:'Item '+x.k+' (wt '+x.w+') does not fit. Take the fraction '+rem+'/'+x.w+' of it: gain '+x.v+' × '+rem+'/'+x.w+' = '+fm(g)+'. Then break.'});
+      rem=0;full=true}
+  });
+  return {kind:'grid',rows:it.map(function(x){return 'Item '+x.k}),cols:['wt','val','val/wt','taken','gain','cap left'],steps:S,path:[],chosen:ch,memo:false,
+    res:'<b>Maximum value: '+fm(tot)+'</b><br>Capacity '+W+'. Greedy picks by value per weight, so no table or recursion is needed.'};
+}
+function gFkDp(p,memo){
+  var it=p.items,W=p.W,n=it.length,T=mk(n,W+1,null),BX=mk(n,W+1,0),S=[];
+  function nm(i,w){return 'f(i='+i+', W='+w+')'}
+  function best(i,w,get){
+    var m=Math.min(it[i].w,w),rt=it[i].v/it[i].w,b=0,bx=0,bp=0;
+    for(var x=0;x<=m;x++){var pv=get(i-1,w-x),c=pv+x*rt;if(c>b+1e-9){b=c;bx=x;bp=pv}}
+    BX[i][w]=bx;T[i][w]=b;
+    return {m:'Try x = 0..'+m+' units of item '+i+' (each unit is worth '+fm(rt)+'). Best is x = '+bx+': '+fm(bp)+' + '+bx+' × '+fm(rt)+' = '+fm(b)+'.',v:b};
+  }
+  function f(i,w){
+    var cc=i>=0?[i,w]:null;
+    S.push({p:nm(i,w),cur:cc,k:'c',L:[1],m:'Call '+nm(i,w)+'.'});
+    if(i<0||w===0){S.push({q:1,cur:cc,k:'b',L:[1],m:nm(i,w)+': '+(i<0?'no items left':'no capacity left')+'. Return 0, nothing stored.'});return 0}
+    if(T[i][w]!=null){S.push({q:1,cur:cc,k:'h',L:[2],m:nm(i,w)+' is already '+fm(T[i][w])+'. Memo hit.'});return T[i][w]}
+    var m=Math.min(it[i].w,w),rt=it[i].v/it[i].w,b=0,bx=0,bp=0;
+    for(var x=0;x<=m;x++){var pv=f(i-1,w-x),c=pv+x*rt;if(c>b+1e-9){b=c;bx=x;bp=pv}}
+    BX[i][w]=bx;T[i][w]=b;
+    S.push({q:1,cur:cc,k:'w',set:[[i,w,fm(b)]],L:[3,4,5,6],m:'Update dp['+i+']['+w+']: try x = 0..'+m+' units of item '+i+' (each worth '+fm(rt)+'). Best x = '+bx+': '+fm(bp)+' + '+bx+' × '+fm(rt)+' = '+fm(b)+'.'});
+    return b;
+  }
+  if(memo)f(n-1,W);
+  else{
+    S.push({k:'',L:[0],m:'dp[i][w] is the best value from items 0..i with capacity w, where each item can be split into whole units.'});
+    for(var i=0;i<n;i++)for(var w=0;w<=W;w++){
+      var r=best(i,w,function(a,b2){return a>=0?T[a][b2]:0});
+      S.push({cur:[i,w],k:'w',set:[[i,w,fm(r.v)]],L:[1,2,3,4,5],m:'Fill dp['+i+']['+w+']: '+r.m});
+    }
+  }
+  var path=[],take=[],w3=W,ch=[];
+  for(var j=n-1;j>=0&&w3>0;j--){path.push([j,w3]);var x=BX[j][w3];if(x>0){ch.push(j);take.push('item '+j+': '+x+' of '+it[j].w+' units ('+fm(x/it[j].w*100)+'%)')}w3-=x}
+  return {kind:'grid',rows:ksRows(it),cols:wCols(W),steps:S,path:path,chosen:ch,memo:memo,
+    res:'<b>Maximum value: '+fm(T[n-1][W])+'</b><br>'+(take.length?take.reverse().join('; '):'nothing taken')+'.<br>Splitting into whole units gives the same answer as the greedy method when weights and capacity are integers.'};
+}
+
+/* ---------- LCS ---------- */
+function gLcs(p,tab){
+  var X=p.x,Y=p.y,m=X.length,n=Y.length,T=mk(m+1,n+1,null),S=[];
+  function nm(i,j){return 'lcs(i='+i+', j='+j+')'}
+  function g(i,j){return i===0||j===0?0:T[i][j]}
+  function f(i,j){
+    S.push({p:nm(i,j),cur:[i,j],k:'c',L:[1],m:'Call '+nm(i,j)+' on the first '+i+' of X and first '+j+' of Y.'});
+    if(i===0||j===0){S.push({q:1,cur:[i,j],k:'b',L:[1],m:nm(i,j)+': one prefix is empty, return 0. Nothing stored.'});return 0}
+    if(T[i][j]!=null){S.push({q:1,cur:[i,j],k:'h',L:[2],m:nm(i,j)+': dp['+i+']['+j+'] is already '+T[i][j]+'. Memo hit.'});return T[i][j]}
+    var r,msg,L;
+    if(X[i-1]===Y[j-1]){var d=f(i-1,j-1);r=1+d;L=[3,4];msg='X['+(i-1)+']='+X[i-1]+' equals Y['+(j-1)+']='+Y[j-1]+', so 1 + lcs('+(i-1)+', '+(j-1)+') = 1 + '+d+' = '+r+'.'}
+    else{var a=f(i-1,j),b=f(i,j-1);r=Math.max(a,b);L=[3,5];msg='X['+(i-1)+']='+X[i-1]+' differs from Y['+(j-1)+']='+Y[j-1]+', so max(lcs('+(i-1)+', '+j+')='+a+', lcs('+i+', '+(j-1)+')='+b+') = '+r+'.'}
+    T[i][j]=r;
+    S.push({q:1,cur:[i,j],k:'w',set:[[i,j,r]],L:L,m:'Update dp['+i+']['+j+']: '+msg});
+    return r;
+  }
+  if(tab){
+    var z=[];for(var a0=0;a0<=m;a0++)z.push([a0,0,0]);for(var b0=1;b0<=n;b0++)z.push([0,b0,0]);
+    S.push({set:z,k:'w',L:[],m:'Row 0 and column 0 are 0: an empty string has no common subsequence. Fill the rest row by row.'});
+    for(var i=1;i<=m;i++)for(var j=1;j<=n;j++){
+      var r,msg,L;
+      if(X[i-1]===Y[j-1]){r=1+g(i-1,j-1);L=[0,1,2];msg='X['+(i-1)+']='+X[i-1]+' equals Y['+(j-1)+']='+Y[j-1]+': 1 + dp['+(i-1)+']['+(j-1)+'] = '+r+'.'}
+      else{r=Math.max(g(i-1,j),g(i,j-1));L=[0,1,3];msg='X['+(i-1)+']='+X[i-1]+' differs from Y['+(j-1)+']='+Y[j-1]+': max(dp['+(i-1)+']['+j+']='+g(i-1,j)+', dp['+i+']['+(j-1)+']='+g(i,j-1)+') = '+r+'.'}
+      T[i][j]=r;S.push({cur:[i,j],k:'w',set:[[i,j,r]],L:L,m:'Fill dp['+i+']['+j+']: '+msg});
+    }
+  }else f(m,n);
+  var path=[],s='',i2=m,j2=n;
+  while(i2>0&&j2>0){path.push([i2,j2]);
+    if(X[i2-1]===Y[j2-1]){s=X[i2-1]+s;i2--;j2--}
+    else if(g(i2-1,j2)>=g(i2,j2-1))i2--;else j2--}
+  var rows=[],cols=[];
+  for(var a=0;a<=m;a++)rows.push(a?'i='+a+' ('+esc(X[a-1])+')':'i=0');
+  for(var b=0;b<=n;b++)cols.push(b?'j='+b+' ('+esc(Y[b-1])+')':'j=0');
+  return {kind:'grid',rows:rows,cols:cols,steps:S,path:path,chosen:[],memo:!tab,
+    res:'<b>LCS length: '+T[m][n]+'</b><br>One longest common subsequence: <b>'+(s?esc(s):'(empty)')+'</b>'};
+}
+
+/* ---------- sorting ---------- */
+function gMerge(p){
+  var A=p.arr.slice(),S=[],cmp=0;
+  function ms(l,r){
+    var h={};for(var x=l;x<=r;x++)h[x]='c';
+    S.push({p:'mergeSort('+l+', '+r+')',a:A.slice(),hl:h,L:[0,1],m:'Call mergeSort('+l+', '+r+') on ['+A.slice(l,r+1).join(', ')+'].'});
+    if(l>=r){S.push({q:1,a:A.slice(),hl:h,L:[1],m:'l >= r: a single element is already sorted. Return.'});return}
+    var m=(l+r)>>1;
+    S.push({a:A.slice(),hl:h,L:[2],m:'Split at m = '+m+': left half ['+l+'..'+m+'], right half ['+(m+1)+'..'+r+'].'});
+    ms(l,m);ms(m+1,r);
+    var Lh=A.slice(l,m+1),Rh=A.slice(m+1,r+1),i=0,j=0,out=[];
+    function snap(msg,q){
+      var d=A.slice(0,l).concat(out,Lh.slice(i),Rh.slice(j),A.slice(r+1)),hl={},k=l;
+      for(var a=0;a<out.length;a++)hl[k++]='w';
+      for(a=i;a<Lh.length;a++)hl[k++]='a';
+      for(a=j;a<Rh.length;a++)hl[k++]='b';
+      var o={a:d,hl:hl,L:[5],m:msg};if(q){o.q=1;o.L=[6]}S.push(o);
+    }
+    snap('Merge left ['+Lh.join(', ')+'] and right ['+Rh.join(', ')+'], both already sorted.');
+    while(i<Lh.length&&j<Rh.length){
+      cmp++;var t;
+      if(Lh[i]<=Rh[j]){t=Lh[i];out.push(Lh[i++]);snap('Compare '+t+' (left front) with '+Rh[j]+' (right front). Left is smaller or equal, so write '+t+'.')}
+      else{t=Rh[j];out.push(Rh[j++]);snap('Compare '+Lh[i]+' (left front) with '+t+' (right front). Right is smaller, so write '+t+'.')}
+    }
+    while(i<Lh.length){var t1=Lh[i];out.push(Lh[i++]);snap('Right half is used up. Copy '+t1+' from the left half.')}
+    while(j<Rh.length){var t2=Rh[j];out.push(Rh[j++]);snap('Left half is used up. Copy '+t2+' from the right half.')}
+    for(var q=0;q<out.length;q++)A[l+q]=out[q];
+    var hh={};for(q=l;q<=r;q++)hh[q]='w';
+    S.push({q:1,a:A.slice(),hl:hh,L:[6],m:'mergeSort('+l+', '+r+') returns. ['+out.join(', ')+'] is sorted.'});
+  }
+  ms(0,A.length-1);
+  return {kind:'bars',arr0:p.arr.slice(),steps:S,res:'<b>Sorted: '+A.join(', ')+'</b><br>'+cmp+' comparisons. Always O(n log n) comparisons, plus extra memory for the merge.'};
+}
+function gQuick(p){
+  var a=p.arr.slice(),S=[],fin={},cmp=0,sw=0;
+  function H(o){var h={};for(var k in fin)h[k]='f';for(k in o)h[k]=o[k];return h}
+  function qs(lo,hi){
+    var r={};for(var x=lo;x<=hi;x++)r[x]='c';
+    S.push({p:'quickSort('+lo+', '+hi+')',a:a.slice(),hl:H(r),L:[7,8],m:'Call quickSort('+lo+', '+hi+') on ['+a.slice(lo,hi+1).join(', ')+'].'});
+    if(lo>=hi){if(lo===hi)fin[lo]='f';S.push({q:1,a:a.slice(),hl:H({}),L:[8],m:'lo >= hi: '+(lo===hi?'one element is in its final place.':'empty range.')+' Return.'});return}
+    var pv=a[hi],i=lo-1;
+    function view(j){var o={};for(var x=lo;x<=hi;x++)o[x]='c';for(x=lo;x<=i;x++)o[x]='a';o[hi]='p';if(j!=null&&j<hi)o[j]='j';return H(o)}
+    S.push({a:a.slice(),hl:view(null),L:[1],m:'Partition: pivot = a['+hi+'] = '+pv+'. Everything smaller than the pivot will be moved to the left.'});
+    for(var j=lo;j<hi;j++){
+      cmp++;
+      if(a[j]<pv){i++;var sm=i!==j;if(sm){var t=a[i];a[i]=a[j];a[j]=t;sw++}
+        S.push({a:a.slice(),hl:view(j),L:[2,3],m:'a['+j+'] < '+pv+'? Yes. '+(sm?'Swap it into the left part (positions '+i+' and '+j+').':'It is already next to the left part.')})}
+      else S.push({a:a.slice(),hl:view(j),L:[2,3],m:'a['+j+'] = '+a[j]+' is not smaller than '+pv+'. Leave it on the right.'});
+    }
+    var t2=a[i+1];a[i+1]=a[hi];a[hi]=t2;if(i+1!==hi)sw++;
+    var pi=i+1;fin[pi]='f';
+    S.push({a:a.slice(),hl:H({}),L:[4,5],m:'Swap the pivot into index '+pi+'. Everything left of it is smaller, everything right is larger, so '+pv+' is in its final place.'});
+    S.push({a:a.slice(),hl:H({}),L:[9],m:'partition returned p = '+pi+'. Now sort both sides.'});
+    qs(lo,pi-1);qs(pi+1,hi);
+    S.push({q:1,a:a.slice(),hl:H({}),L:[12],m:'quickSort('+lo+', '+hi+') returns.'});
+  }
+  qs(0,a.length-1);
+  return {kind:'bars',arr0:p.arr.slice(),steps:S,res:'<b>Sorted: '+a.join(', ')+'</b><br>'+cmp+' comparisons, '+sw+' swaps. Average O(n log n); worst case O(n²) when the pivot is always the smallest or largest.'};
+}
+
+/* ---------- registry ---------- */
+var ALGOS={
+ks_memo:{t:'0/1 Knapsack: Memoization',inp:'ks',code:C.ksm,gen:function(p){return gKs(p,0)},d:'Top-down recursion. knapsack(i, W) returns 0 when i < 0 or W == 0 (nothing is stored) and saves every other result in dp[i][W].'},
+ks_tab:{t:'0/1 Knapsack: Tabulation',inp:'ks',code:C.kst,gen:function(p){return gKs(p,1)},d:'Bottom-up. dp[i][w] is filled row by row from the row above, exactly like your loop. There is no recursion, so the stack stays empty.'},
+fk_greedy:{t:'Fractional Knapsack: Greedy',inp:'ks',code:C.fkg,gen:gFkGreedy,d:'Items can be split. Sort by value per weight, take whole items while they fit, then take the fraction that fits of the next one.'},
+fk_memo:{t:'Fractional Knapsack: Memoization',inp:'ks',code:C.fkm,gen:function(p){return gFkDp(p,1)},d:'Fractional knapsack as a top-down DP: f(i, W) tries x whole units of item i (x = 0 to wt[i]), each unit worth val/wt.'},
+fk_tab:{t:'Fractional Knapsack: Tabulation',inp:'ks',code:C.fkt,gen:function(p){return gFkDp(p,0)},d:'The same unit-splitting DP, filled bottom-up row by row.'},
+lcs_memo:{t:'LCS: Memoization',inp:'lcs',code:C.lm,gen:function(p){return gLcs(p,0)},d:'Longest common subsequence, top-down. lcs(i, j) uses the first i characters of X and the first j of Y. Empty prefixes return 0 without storing.'},
+lcs_tab:{t:'LCS: Tabulation',inp:'lcs',code:C.lt,gen:function(p){return gLcs(p,1)},d:'Longest common subsequence, bottom-up. Row 0 and column 0 start at 0, then each cell comes from its diagonal, top or left neighbour.'},
+msort:{t:'Merge Sort',inp:'arr',code:C.ms,gen:gMerge,d:'Split the array in halves recursively, then merge the sorted halves by repeatedly writing the smaller front element.'},
+qsort:{t:'Quick Sort',inp:'arr',code:C.qs,gen:gQuick,d:'Pick the last element as pivot, partition so smaller values go left (Lomuto scheme), then sort both sides recursively.'}
+};
+
+/* ---------- inputs ---------- */
+var EXI=[[2,3],[3,4],[4,5],[5,6]];
+function drawInputs(vals){
+  var box=$('items');box.innerHTML='';
+  vals.forEach(function(it,k){
+    var r=document.createElement('div');r.className='irow';
+    r.innerHTML='<b>'+k+'</b><input type="number" min="1" value="'+it[0]+'" aria-label="Weight of item '+k+'"><input type="number" min="0" value="'+it[1]+'" aria-label="Value of item '+k+'"><button class="x" aria-label="Remove item '+k+'">×</button>';
+    r.querySelector('button').onclick=function(){var v=readItems();v.splice(k,1);drawInputs(v)};
+    box.appendChild(r);
+  });
+}
+function readItems(){return Array.prototype.map.call($('items').children,function(r){var n=r.querySelectorAll('input');return [parseInt(n[0].value,10),parseInt(n[1].value,10)]})}
+function bad(t){$('err').textContent=t;return null}
+function readInp(kind){
+  $('err').textContent='';
+  if(kind==='ks'){
+    var v=readItems(),c=parseInt($('cap').value,10);
+    if(!(c>=1&&c<=30))return bad('Capacity must be a whole number from 1 to 30.');
+    if(v.length<1)return bad('Add at least one item.');
+    for(var k=0;k<v.length;k++)if(!(v[k][0]>=1)||!(v[k][1]>=0))return bad('Item '+k+': weight must be 1 or more and value 0 or more (whole numbers).');
+    return {W:c,items:v.map(function(a){return {w:a[0],v:a[1]}})};
+  }
+  if(kind==='lcs'){
+    var x=$('sx').value.trim(),y=$('sy').value.trim();
+    if(!x||!y)return bad('Enter both strings.');
+    return {x:x,y:y};
+  }
+  var t=$('arr').value.trim().split(/[\s,]+/).map(Number);
+  if(t.length<2||t.length>16||t.some(function(n){return !(n>=1&&n<=99)||n%1!==0}))return bad('Enter 2 to 16 whole numbers between 1 and 99.');
+  return {arr:t};
+}
+
+/* ---------- view ---------- */
+function stop(){clearTimeout(timer);timer=null;if($('play').textContent==='Pause')$('play').textContent='Play'}
+function buildView(){
+  var g=M.kind==='grid';
+  $('gridv').classList.toggle('hide',!g);$('barv').classList.toggle('hide',g);
+  $('legG').classList.toggle('hide',!g);$('legB').classList.toggle('hide',g);
+  if(g){
+    var h='<tr><th></th>';M.cols.forEach(function(c){h+='<th scope="col">'+c+'</th>'});h+='</tr>';
+    M.rows.forEach(function(r,i){h+='<tr><th class="r" scope="row">'+r+'</th>';for(var c=0;c<M.cols.length;c++)h+='<td id="c'+i+'_'+c+'">·</td>';h+='</tr>'});
+    $('tbl').innerHTML=h;
+  }else{
+    var b='';M.arr0.forEach(function(){b+='<div class="bar"></div>'});$('barv').innerHTML=b;
+  }
+}
+function render(){
+  var S=M.steps,last=cur>=0?S[cur]:null,st=[],cells={},logs=[],calls=0,hits=0,wr=0;
+  for(var k=0;k<=cur;k++){
+    var e=S[k];
+    if(e.p){st.push(e);calls++}
+    if(e.q)st.pop();
+    if(e.k==='h')hits++;
+    if(e.set){e.set.forEach(function(s){cells[s[0]+'_'+s[1]]=s[2]});wr++}
+    logs.push(e.m);
+  }
+  var fin=cur===S.length-1;
+  if(M.kind==='grid'){
+    var inS={},onP={};
+    st.forEach(function(e){if(e.cur)inS[e.cur[0]+'_'+e.cur[1]]=1});
+    if(fin)(M.path||[]).forEach(function(p){onP[p[0]+'_'+p[1]]=1});
+    for(var r=0;r<M.rows.length;r++)for(var c=0;c<M.cols.length;c++){
+      var key=r+'_'+c,td=$('c'+r+'_'+c),cls='';
+      if(key in cells){td.textContent=cells[key];cls='f'}else td.textContent='·';
+      if(inS[key])cls+=' s';
+      if(last&&last.cur&&last.cur[0]===r&&last.cur[1]===c&&last.k)cls+=' '+last.k;
+      if(onP[key])cls+=' p';
+      td.className=cls;
+    }
+  }else{
+    var arr=last&&last.a?last.a:M.arr0,hl=last&&last.hl?last.hl:{},mx=Math.max.apply(null,M.arr0),bs=$('barv').children;
+    for(var i=0;i<bs.length;i++){bs[i].textContent=arr[i];bs[i].style.height=Math.max(8,arr[i]/mx*215)+'px';bs[i].className='bar'+(hl[i]?' '+hl[i]:fin?' f':'')}
+  }
+  var on=last&&last.L?last.L:[];
+  ALGOS[id].code.forEach(function(_,i){$('L'+i).className=on.indexOf(i)>=0?'on':''});
+  var sk=$('stack');sk.innerHTML='';
+  st.forEach(function(e,i){var d=document.createElement('div');d.className='fr'+(i===st.length-1?' top':'');d.textContent=e.p;sk.appendChild(d)});
+  if(!st.length)sk.innerHTML='<span style="color:var(--mute)">Empty</span>';
+  var lg=$('log');lg.innerHTML=logs.slice(-60).map(function(t){return '<div>'+esc(t)+'</div>'}).join('');lg.scrollTop=lg.scrollHeight;
+  if(last){$('exp').textContent=last.m;$('exp').className='explain'+(last.k==='h'?' hit':last.k==='w'?' wr':'')}
+  var sh='<span>Step <b>'+(cur+1)+'</b> of <b>'+S.length+'</b></span>';
+  if(M.steps.some(function(e){return e.p}))sh+='<span>Calls <b>'+calls+'</b></span>';
+  if(M.memo)sh+='<span>Memo hits <b>'+hits+'</b></span>';
+  if(M.kind==='grid')sh+='<span>Cell writes <b>'+wr+'</b></span>';
+  $('stats').innerHTML=sh;
+  $('back').disabled=cur<0;
+  var res=$('res'),rows=$('items').children;
+  if(fin){
+    res.style.display='block';res.innerHTML=M.res;
+    for(var q=0;q<rows.length;q++)rows[q].classList.toggle('on',(M.chosen||[]).indexOf(q)>=0);
+    stop();$('play').textContent='Replay';
+  }else{
+    res.style.display='none';
+    for(var q2=0;q2<rows.length;q2++)rows[q2].classList.remove('on');
+    if($('play').textContent==='Replay')$('play').textContent='Play';
+  }
+}
+function build(){
+  stop();var A=ALGOS[id],p=readInp(A.inp);if(!p)return;
+  if(A.inp==='ks')drawInputs(readItems());
+  M=A.gen(p);cur=-1;buildView();render();
+  ['play','step','skip'].forEach(function(b){$(b).disabled=false});
+  $('back').disabled=true;
+  $('exp').className='explain';$('exp').textContent='Ready. '+M.steps.length+' steps will be shown. Press Play or Step.';
+}
+function select(k){
+  stop();id=k;var A=ALGOS[k];
+  Array.prototype.forEach.call($('tabs').children,function(b){b.setAttribute('aria-selected',b.dataset.id===k?'true':'false')});
+  $('ttl').textContent=A.t;$('sub').textContent=A.d;
+  ['ks','lcs','arr'].forEach(function(n){$('in_'+n).classList.toggle('hide',A.inp!==n)});
+  $('code').innerHTML=A.code.map(function(l,i){return '<span id="L'+i+'">'+esc(l)+'</span>'}).join('');
+  $('err').textContent='';build();
+}
+function delay(){return Math.round(1100/Math.pow(1.45,parseInt($('spd').value,10)-1))+30}
+function tick(){
+  if(cur>=M.steps.length-1){stop();return}
+  cur++;render();
+  if(cur<M.steps.length-1)timer=setTimeout(tick,delay());else stop();
+}
+$('play').onclick=function(){
+  if(timer){stop();return}
+  if(cur>=M.steps.length-1){cur=-1;render()}
+  $('play').textContent='Pause';timer=setTimeout(tick,50);
+};
+$('step').onclick=function(){stop();if(cur<M.steps.length-1){cur++;render()}};
+$('back').onclick=function(){stop();if(cur>=0){cur--;render()}};
+$('skip').onclick=function(){stop();cur=M.steps.length-1;render()};
+$('run').onclick=build;
+$('add').onclick=function(){var v=readItems();if(v.length>=8){$('err').textContent='Up to 8 items keeps the table readable.';return}$('err').textContent='';v.push([1,1]);drawInputs(v)};
+$('ex').onclick=function(){$('cap').value=8;drawInputs(EXI);$('err').textContent=''};
+$('rnd').onclick=function(){var a=[];for(var i=0;i<8;i++)a.push(1+Math.floor(Math.random()*99));$('arr').value=a.join(' ');build()};
+$('useIn').onclick=function(){
+  var t=$('stdin').value.trim().split(/\s+/).map(Number),n=t[0],c=t[1];
+  if(!(n>=1&&n<=8)||!(c>=1&&c<=30)||t.length<2+2*n||t.some(isNaN)){$('err').textContent='Expected: n (1 to 8) and W (1 to 30), then n weights, then n values.';return}
+  var v=[];for(var k=0;k<n;k++)v.push([t[2+k],t[2+n+k]]);
+  $('cap').value=c;drawInputs(v);build();
+};
+Object.keys(ALGOS).forEach(function(k){
+  var b=document.createElement('button');b.textContent=ALGOS[k].t;b.dataset.id=k;b.setAttribute('role','tab');
+  b.onclick=function(){select(k)};$('tabs').appendChild(b);
+});
+drawInputs(EXI);select('ks_memo');
+})();
+</script>
+</body>
+</html>
